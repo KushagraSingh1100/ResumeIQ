@@ -2,8 +2,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
+import fitz
 import io
-import pdf2image
 from google import genai
 from google.genai import types
 
@@ -39,28 +39,15 @@ async def input_pdf_setup(uploaded_file):
     if uploaded_file is None:
         raise FileNotFoundError("No file uploaded")
     pdf_bytes = await uploaded_file.read()
-    images = pdf2image.convert_from_bytes(pdf_bytes, poppler_path=r"C:\poppler-26.02.0\Library\bin")
-    if not images:
-        raise ValueError("The uploaded PDF contains no pages.")
-    first_page=images[0]
-    img_byte_arr = io.BytesIO()
-    first_page.save(img_byte_arr, format='JPEG')
-    return img_byte_arr.getvalue()
+    return input_pdf_bytes_setup(pdf_bytes)
 
 def input_pdf_bytes_setup(pdf_bytes):
     if pdf_bytes is None:
         raise FileNotFoundError("No PDF found")
-
-    images = pdf2image.convert_from_bytes(
-        pdf_bytes,
-        poppler_path=r"C:\poppler-26.02.0\Library\bin"
-    )
-    if not images:
-        raise ValueError("The PDF contains no pages.")
-    first_page = images[0]
-    img_byte_arr = io.BytesIO()
-    first_page.save(img_byte_arr, format="JPEG")
-    return img_byte_arr.getvalue()
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    page = doc.load_page(0)
+    pix = page.get_pixmap()
+    return pix.tobytes("jpeg")
 
 
 input_prompt1 = """

@@ -16,6 +16,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:5173",
+    "https://resume-iq-frontend-six.vercel.app",
 ]
 
 app.add_middleware(
